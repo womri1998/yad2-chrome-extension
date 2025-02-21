@@ -1,10 +1,16 @@
 import time
-from selenium.webdriver import ChromeOptions, Chrome
+from selenium import webdriver
+from selenium.webdriver import ChromeOptions, Chrome, Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 
 
-class Yad2Uploader:
+BUTTON_CONTAINER_NAME = 'action-button_actionButtonContainer__2k0KY'
+BUTTON_CLASS_NAME = 'bump-button_bumpButton__f0roc'
+BUMP_LABEL_CLASS_NAME = 'action-button_actionButtonLabel__WWXHf'
+
+
+class Yad2Bumper:
     def __init__(self):
         chrome_options = ChromeOptions()
         chrome_options.debugger_address = "127.0.0.1:9222"
@@ -13,7 +19,6 @@ class Yad2Uploader:
             options=chrome_options
         )
         self.driver.get("https://www.yad2.co.il/my-ads")
-        self.main_window = self.driver.current_window_handle
 
     def scroll_down(self):
         scroll_pause_time = 0.5
@@ -28,13 +33,22 @@ class Yad2Uploader:
                 reached_end = True
             last_heights = last_heights[1:] + [new_height]
 
-    def get_my_ads_links(self) -> list[str]:
-        link_objects = self.driver.find_elements(By.CLASS_NAME, 'grid_shadowLink__gzEug')
-        return [link_object.get_attribute("href") for link_object in link_objects]
-
-    def
-
+    def bump_my_ads(self):
+        bump_divs = self.driver.find_elements(By.CLASS_NAME, BUTTON_CONTAINER_NAME)
+        bump_divs = [
+            element for element in bump_divs
+            if element.get_attribute('data-testid') == 'bump-ad-action-button'
+        ]
+        for i, div in enumerate(bump_divs):
+            button = div.find_element(By.CLASS_NAME, BUTTON_CLASS_NAME)
+            label = div.find_element(By.CLASS_NAME, BUMP_LABEL_CLASS_NAME).text
+            if label == 'הקפצה':
+                button.click()
+                time.sleep(5)
+                webdriver.ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
 
 
 if __name__ == '__main__':
-    pass
+    yad2bumper = Yad2Bumper()
+    yad2bumper.scroll_down()
+    yad2bumper.bump_my_ads()
